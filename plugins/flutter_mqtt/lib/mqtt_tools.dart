@@ -58,17 +58,16 @@ class MqttTool {
     _client?.onUnsubscribed = _onUnSubscribed;
     _client?.onDisconnected = () async {
       _isConnected = false;
-      print("NEO-mqtt mqtt MqttManager onDisconnected:${_client?.server} - reconnect");
       await _tryToConnect(clientIdentifier);
     };
     _client?.pongCallback = () {
-      print("NEO-mqtt MqttManager pongCallback:${_client?.server}");
+      print("mqtt MqttManager pongCallback:${_client?.server}");
     };
     _client?.setProtocolV311();
     _client?.keepAlivePeriod = 30;
     _client?.logging(on: false); //是否打印MQTT Log
     _client?.published?.listen((event) {
-      print("NEO-mqtt published ${event}");
+      print("mqtt published ${event}");
     });
     _client?.keepAlivePeriod = 30;
     _client?.logging(on: false); //是否打印MQTT Log
@@ -81,7 +80,7 @@ class MqttTool {
   }
 
   void doMsg( Map<String, dynamic> msg) async{
-    print("NEO-mqtt MqttTool Msg :"+msg.toString());
+    print("mqtt MqttTool Msg :"+msg.toString());
     if(msg.containsKey('cmd') &&
         msg.containsKey('event') &&
         msg.containsKey('payload')
@@ -100,14 +99,14 @@ class MqttTool {
     _isConnected = false;
     _client?.onDisconnected = null;
     _client?.disconnect();
-    print("NEO-mqtt MqttManager disconnect:${_client?.server}");
+    print("mqtt MqttManager disconnect:${_client?.server}");
     _client =null;
   }
 
   ///订阅
   int? publishMessage(String id, String msg) {
     var pTopic = "live/app/pub/$id/domain/report";
-    print("NEO-mqtt_发送数据-topic:$pTopic,playLoad:$msg");
+    print("mqtt_发送数据-topic:$pTopic,playLoad:$msg");
     Uint8Buffer uint8buffer = Uint8Buffer();
     var codeUnits = msg.codeUnits;
     uint8buffer.addAll(codeUnits);
@@ -117,7 +116,7 @@ class MqttTool {
 
   ///发布消息
   int? publishRawMessage(String pTopic, List<int> list) {
-      print("NEO-mqtt_发送数据-topic:${130102699},playLoad:$list");
+      print("mqtt_发送数据-topic:${130102699},playLoad:$list");
       Uint8Buffer uint8buffer = Uint8Buffer();
       uint8buffer.addAll(list);
       return _client?.publishMessage(pTopic, _qos, uint8buffer, retain: false);
@@ -125,7 +124,7 @@ class MqttTool {
 
     ///订阅消息
   Subscription? subscribeMessage(String subtopic) {
-    print("NEO-mqtt 订阅消息成功");
+    print("mqtt 订阅消息成功");
     if(getConnectionState() == MqttConnectionState.connected){
       return _client?.subscribe(subtopic, _qos);
     }else{
@@ -138,7 +137,7 @@ class MqttTool {
 
   ///取消订阅
   void unsubscribeMessage(String? unSubtopic) {
-    print("NEO-mqtt 取消订阅");
+    print("mqtt 取消订阅");
     if(unSubtopic?.isNotEmpty == true){
       subscribeMessageTask.remove(unSubtopic);
       if(_isConnected){
@@ -186,17 +185,17 @@ class MqttTool {
 
   ///订阅成功
   _onSubscribed(String topic) {
-    print("NEO-mqtt _订阅主题成功---topic:$topic");
+    print("mqtt _订阅主题成功---topic:$topic");
   }
 
   ///取消订阅
   _onUnSubscribed(String? topic) {
-    print("NEO-mqtt _取消订阅主题成功---topic:$topic");
+    print("mqtt _取消订阅主题成功---topic:$topic");
   }
 
   ///订阅失败
   _onSubscribeFail(String topic) {
-    print("NEO-mqtt 订阅失败");
+    print("mqtt 订阅失败");
   }
 
   Future _tryToConnect(id) async {
@@ -204,7 +203,7 @@ class MqttTool {
       await _client?.connect("live" + id, md5.convert(utf8.encode("u" + id)).toString().substring(8, 24));
       _client?.updates?.listen((event) {
         //接收消息
-        print("NEO-Listen ${event}");
+        print("Listen ${event}");
         var message = event[0].payload as MqttPublishMessage;
         var strMsg = MqttPublishPayload.bytesToStringAsString(message.payload.message);
         // var strMsg = const Utf8Decoder().convert(message.payload.message);
